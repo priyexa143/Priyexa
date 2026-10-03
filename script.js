@@ -32,7 +32,7 @@ form.addEventListener("submit",(e)=>{
     }
 
     // Replace this with the real PRIYEXA WhatsApp number.
-    const whatsappNumber="919999999999";
+    const whatsappNumber="+919483774583";
 
     const text=
         `Hello PRIYEXA!%0A%0A`+
