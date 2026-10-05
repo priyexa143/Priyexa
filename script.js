@@ -1,10 +1,3 @@
-const SUPABASE_URL = "https://bubsyuriwcpxckdvkyvw.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_glf8AGc1dfHputcrnrvmDg_V8MqgpBp";
-
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-);
 
 // Mobile menu
 const menuBtn = document.getElementById("menuBtn");
