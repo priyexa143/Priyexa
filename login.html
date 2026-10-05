@@ -132,46 +132,59 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const SUPABASE_URL = "https://bubsyuriwcpxckdvkyvw.supabase.co";
+(() => {
 
-const SUPABASE_PUBLISHABLE_KEY =
-"sb_publishable_glf8AGc1dfHputcrnrvmDg_V8MqgpBp";
+    const SUPABASE_URL =
+        "https://bubsyuriwcpxckdvkyvw.supabase.co";
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-);
+    const SUPABASE_PUBLISHABLE_KEY =
+        "sb_publishable_glf8AGc1dfHputcrnrvmDg_V8MqgpBp";
 
-const loginForm = document.getElementById("loginForm");
-const authMessage = document.getElementById("authMessage");
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
 
-loginForm.addEventListener("submit", async (e) => {
+    const loginForm =
+        document.getElementById("loginForm");
 
-    e.preventDefault();
+    const authMessage =
+        document.getElementById("authMessage");
 
-    const email =
-        document.getElementById("loginEmail").value.trim();
-
-    const password =
-        document.getElementById("loginPassword").value;
-
-    authMessage.textContent = "Logging in...";
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
-
-    if (error) {
-        authMessage.textContent = error.message;
+    if (!loginForm || !authMessage) {
         return;
     }
 
-    authMessage.textContent = "Login successful!";
+    loginForm.addEventListener("submit", async (e) => {
 
-    window.location.href = "dashboard.html";
-});
+        e.preventDefault();
+
+        const email =
+            document.getElementById("loginEmail").value.trim();
+
+        const password =
+            document.getElementById("loginPassword").value;
+
+        authMessage.textContent = "Logging in...";
+
+        const { error } =
+            await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+        if (error) {
+            authMessage.textContent = error.message;
+            return;
+        }
+
+        authMessage.textContent = "Login successful!";
+
+        window.location.href = "dashboard.html";
+    });
+
+})();
 </script>
-
 </body>
 </html>
