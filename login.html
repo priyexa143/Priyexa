@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PRIYEXA | Login</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 430px;
+            padding: 40px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.35);
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-logo img {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            object-fit: cover;
+        }
+
+        .auth-logo h1 {
+            margin: 15px 0 5px;
+        }
+
+        .auth-logo p {
+            color: var(--muted);
+        }
+
+        .auth-box label {
+            display: block;
+            margin: 18px 0 8px;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: #050811;
+            color: var(--text);
+            box-sizing: border-box;
+        }
+
+        .auth-box button {
+            width: 100%;
+            margin-top: 25px;
+            cursor: pointer;
+        }
+
+        #authMessage {
+            margin-top: 18px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .back-home {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="auth-page">
+
+    <div class="auth-box">
+
+        <div class="auth-logo">
+            <img src="images/priyexa-mark.jpg" alt="PRIYEXA">
+            <h1>PRIYEXA</h1>
+            <p>Partner Portal</p>
+        </div>
+
+        <form id="loginForm">
+
+            <label>Email</label>
+            <input
+                type="email"
+                id="loginEmail"
+                required
+                placeholder="Enter your email"
+            >
+
+            <label>Password</label>
+            <input
+                type="password"
+                id="loginPassword"
+                required
+                placeholder="Enter your password"
+            >
+
+            <button class="btn primary" type="submit">
+                Login →
+            </button>
+
+            <p id="authMessage"></p>
+
+        </form>
+
+        <a class="back-home" href="index.html">
+            ← Back to PRIYEXA
+        </a>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://bubsyuriwcpxckdvkyvw.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_glf8AGc1dfHputcrnrvmDg_V8MqgpBp";
+
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+const loginForm = document.getElementById("loginForm");
+const authMessage = document.getElementById("authMessage");
+
+loginForm.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const email =
+        document.getElementById("loginEmail").value.trim();
+
+    const password =
+        document.getElementById("loginPassword").value;
+
+    authMessage.textContent = "Logging in...";
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        authMessage.textContent = error.message;
+        return;
+    }
+
+    authMessage.textContent = "Login successful!";
+
+    window.location.href = "dashboard.html";
+});
+</script>
+
+</body>
+</html>
