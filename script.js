@@ -43,19 +43,19 @@ form.addEventListener("submit", (e) => {
         return;
     }
 
-    const whatsappNumber = "+919483774583";
+    const whatsappNumber = "919483774583";
 
-    const text =
-        `Hello PRIYEXA!%0A%0A` +
-        `Name: ${encodeURIComponent(name)}%0A` +
-        `Email: ${encodeURIComponent(email)}%0A` +
-        `Service: ${encodeURIComponent(service)}%0A` +
-        `Project: ${encodeURIComponent(project)}`;
+    const text = `Hello PRIYEXA!
+
+Name: ${name}
+Email: ${email}
+Service: ${service}
+Project: ${project}`;
+
+    const whatsappURL =
+        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
 
     message.textContent = "Opening WhatsApp...";
 
-    window.open(
-        `https://wa.me/${whatsappNumber}?text=${text}`,
-        "_blank"
-    );
+    window.open(whatsappURL, "_blank");
 });
