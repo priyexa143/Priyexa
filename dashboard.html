@@ -290,12 +290,15 @@
                 .eq("id", currentUser.id)
                 .single();
 
-        if (partnerError) {
+      if (partnerError) {
 
-            document.getElementById("dashboardMessage").textContent =
-                "Your partner account is waiting for admin setup.";
+    console.error("Partner query error:", partnerError);
 
-            return;
+    document.getElementById("dashboardMessage").textContent =
+        "Partner error: " + partnerError.message;
+
+    return;
+}
         }
 
         if (partner.status !== "active") {
