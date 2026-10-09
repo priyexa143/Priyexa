@@ -112,6 +112,20 @@
                 required
                 placeholder="Enter your password"
             >
+            <a
+    href="#"
+    id="forgotPassword"
+    style="
+        display:block;
+        text-align:right;
+        margin: -8px 0 18px;
+        color:#10a9ff;
+        text-decoration:none;
+        font-size:14px;
+    "
+>
+    Forgot password?
+</a>
 
             <button class="btn primary" type="submit">
                 Login →
@@ -183,6 +197,49 @@
 
         window.location.href = "dashboard.html";
     });
+    const forgotPassword =
+    document.getElementById("forgotPassword");
+
+if (forgotPassword) {
+
+    forgotPassword.addEventListener("click", async (e) => {
+
+        e.preventDefault();
+
+        const email =
+            document.getElementById("loginEmail").value.trim();
+
+        if (!email) {
+            authMessage.textContent =
+                "Enter your email address first.";
+            return;
+        }
+
+        authMessage.textContent =
+            "Sending password reset email...";
+
+        const { error } =
+            await supabaseClient.auth.resetPasswordForEmail(
+                email,
+                {
+                    redirectTo:
+                        "https://priyexa143.github.io/Priyexa/reset-password.html"
+                }
+            );
+
+        if (error) {
+
+            authMessage.textContent =
+                error.message;
+
+            return;
+        }
+
+        authMessage.textContent =
+            "Password reset email sent. Check your inbox.";
+    });
+
+}
 
 })();
 </script>
