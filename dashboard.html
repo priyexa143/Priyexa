@@ -226,175 +226,211 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+(() => {
 
-const SUPABASE_URL =
-"https://bubsyuriwcpxckdvkyvw.supabase.co";
+    const SUPABASE_URL =
+        "https://bubsyuriwcpxckdvkyvw.supabase.co";
 
-const SUPABASE_PUBLISHABLE_KEY =
-"sb_publishable_glf8AGc1dfHputcrnrvmDg_V8MqgpBp";
+    const SUPABASE_PUBLISHABLE_KEY =
+        "sb_publishable_glf8AGc1dfHputcrnrvmDg_V8MqgpBp";
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-);
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
 
-let currentUser = null;
+    let currentUser = null;
 
 
-// Check login
-async function checkUser() {
+    // Check login
+    async function checkUser() {
 
-    const {
-        data: { user }
-    } = await supabase.auth.getUser();
+        const {
+            data: { user },
+            error
+        } = await supabaseClient.auth.getUser();
 
-    if (!user) {
-        window.location.href = "login.html";
-        return;
+        if (error || !user) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        currentUser = user;
+
+        await loadDashboard();
     }
 
-    currentUser = user;
 
-    await loadDashboard();
-}
+    // Load dashboard
+    async function loadDashboard() {
+
+        const { data: profile, error: profileError } =
+            await supabaseClient
+                .from("profiles")
+                .select("full_name, role")
+                .eq("id", currentUser.id)
+                .single();
+
+        if (profileError) {
+            document.getElementById("dashboardMessage").textContent =
+                profileError.message;
+            return;
+        }
+
+        document.getElementById("userName").textContent =
+            profile.full_name || currentUser.email;
 
 
-// Load dashboard
-async function loadDashboard() {
+        // Load partner record
+        const { data: partner, error: partnerError } =
+            await supabaseClient
+                .from("partners")
+                .select("referral_code, status")
+                .eq("id", currentUser.id)
+                .single();
 
-    const { data: profile, error: profileError } =
-        await supabase
-            .from("profiles")
-            .select("full_name, role")
-            .eq("id", currentUser.id)
-            .single();
+        if (partnerError) {
 
-    if (profileError) {
+            document.getElementById("dashboardMessage").textContent =
+                "Your partner account is waiting for admin setup.";
+
+            return;
+        }
+
+        if (partner.status !== "active") {
+
+            document.getElementById("dashboardMessage").textContent =
+                "Your partner account is not active yet.";
+
+            return;
+        }
+
         document.getElementById("dashboardMessage").textContent =
-            profileError.message;
-        return;
+            "Your PRIYEXA partner dashboard";
+
+
+        // Referral link
+        const referralLink =
+            window.location.origin +
+            window.location.pathname.replace(
+                "dashboard.html",
+                "index.html"
+            ) +
+            "?ref=" +
+            partner.referral_code;
+
+        document.getElementById("referralLink").value =
+            referralLink;
+
+
+        // Load leads
+        const { data: leads, error: leadsError } =
+            await supabaseClient
+                .from("leads")
+                .select(
+                    "customer_name, service, status, created_at"
+                )
+                .eq("partner_id", currentUser.id)
+                .order("created_at", {
+                    ascending: false
+                });
+
+        if (leadsError) {
+            document.getElementById("dashboardMessage").textContent =
+                leadsError.message;
+            return;
+        }
+
+        document.getElementById("leadCount").textContent =
+            leads ? leads.length : 0;
+
+        const table =
+            document.getElementById("leadsTable");
+
+        table.innerHTML = "";
+
+
+        if (!leads || leads.length === 0) {
+
+            table.innerHTML =
+                `<tr>
+                    <td colspan="4">No leads yet.</td>
+                </tr>`;
+
+            return;
+        }
+
+
+        leads.forEach(lead => {
+
+            const row =
+                document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${lead.customer_name}</td>
+                <td>${lead.service || "-"}</td>
+                <td>${lead.status}</td>
+                <td>
+                    ${new Date(
+                        lead.created_at
+                    ).toLocaleDateString()}
+                </td>
+            `;
+
+            table.appendChild(row);
+
+        });
+
     }
 
-    document.getElementById("userName").textContent =
-        profile.full_name || currentUser.email;
 
-    // Load partner record
-    const { data: partner, error: partnerError } =
-        await supabase
-            .from("partners")
-            .select("referral_code, status")
-            .eq("id", currentUser.id)
-            .single();
+    // Copy referral link
+    document
+        .getElementById("copyReferral")
+        .addEventListener("click", async () => {
 
-    if (partnerError) {
+            const input =
+                document.getElementById("referralLink");
 
-        document.getElementById("dashboardMessage").textContent =
-            "Your partner account is waiting for admin setup.";
+            if (!input.value) {
+                return;
+            }
 
-        return;
-    }
+            await navigator.clipboard.writeText(
+                input.value
+            );
 
-    if (partner.status !== "active") {
+            const button =
+                document.getElementById("copyReferral");
 
-        document.getElementById("dashboardMessage").textContent =
-            "Your partner account is not active yet.";
+            button.textContent = "Copied!";
 
-        return;
-    }
+            setTimeout(() => {
 
-    document.getElementById("dashboardMessage").textContent =
-        "Your PRIYEXA partner dashboard";
+                button.textContent = "Copy Link";
 
-    // Referral link
-    const referralLink =
-        window.location.origin +
-        window.location.pathname.replace(
-            "dashboard.html",
-            "index.html"
-        ) +
-        "?ref=" +
-        partner.referral_code;
+            }, 2000);
 
-    document.getElementById("referralLink").value =
-        referralLink;
-
-    // Load leads
-    const { data: leads } =
-        await supabase
-            .from("leads")
-            .select("customer_name, service, status, created_at")
-            .eq("partner_id", currentUser.id)
-            .order("created_at", { ascending: false });
-
-    document.getElementById("leadCount").textContent =
-        leads ? leads.length : 0;
-
-    const table = document.getElementById("leadsTable");
-
-    table.innerHTML = "";
-
-    if (!leads || leads.length === 0) {
-
-        table.innerHTML =
-            `<tr><td colspan="4">No leads yet.</td></tr>`;
-
-        return;
-    }
-
-    leads.forEach(lead => {
-
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${lead.customer_name}</td>
-            <td>${lead.service || "-"}</td>
-            <td>${lead.status}</td>
-            <td>${new Date(lead.created_at).toLocaleDateString()}</td>
-        `;
-
-        table.appendChild(row);
-    });
-
-}
+        });
 
 
-// Copy referral link
-document.getElementById("copyReferral")
-    .addEventListener("click", async () => {
+    // Logout
+    document
+        .getElementById("logoutBtn")
+        .addEventListener("click", async () => {
 
-        const input =
-            document.getElementById("referralLink");
+            await supabaseClient.auth.signOut();
 
-        await navigator.clipboard.writeText(input.value);
+            window.location.href = "login.html";
 
-        document.getElementById("copyReferral").textContent =
-            "Copied!";
-
-        setTimeout(() => {
-
-            document.getElementById("copyReferral").textContent =
-                "Copy Link";
-
-        }, 2000);
-
-    });
+        });
 
 
-// Logout
-document.getElementById("logoutBtn")
-    .addEventListener("click", async () => {
+    // Start
+    checkUser();
 
-        await supabase.auth.signOut();
-
-        window.location.href = "login.html";
-
-    });
-
-
-// Start
-checkUser();
-
+})();
 </script>
-
 </body>
 </html>
